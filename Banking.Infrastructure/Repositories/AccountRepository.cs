@@ -10,7 +10,7 @@ public class AccountRepository : IAccountRepository
     {
         // async database call simulation
         await Task.Delay(50, cancellationToken);
-        MockDataStore.Accounts.TryGetValue(accountId, out var account);
+        var account = MockDataStore.Accounts.FirstOrDefault(a => a.Id == accountId);
 
         return account;
     }
@@ -19,5 +19,26 @@ public class AccountRepository : IAccountRepository
     {
         // In a real implementation, this would involve an async database call to update the account record.
         return Task.CompletedTask;
+    }
+
+    public async Task<IEnumerable<Account>> GetCustomerAccountsAsync(int customerId, CancellationToken cancellationToken = default)
+    {
+        // async database call simulation
+        await Task.Delay(50, cancellationToken);
+        return MockDataStore.Accounts.Where(a => a.CustomerId == customerId).ToList();
+    }
+
+    public async Task<Account> AddAsync(Account account, CancellationToken cancellationToken = default)
+    {
+        // async database call simulation
+        await Task.Delay(50, cancellationToken);
+
+        var id = MockDataStore.GetNextAccountId();
+
+        var created = new Account(id, account.CustomerId, account.Balance, account.AccountType);
+
+        MockDataStore.Accounts.Add(created);
+
+        return created;
     }
 }

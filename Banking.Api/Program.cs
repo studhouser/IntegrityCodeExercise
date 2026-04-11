@@ -12,10 +12,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Register this as a Scoped service so we get a new instance per HTTP request
+// Register repositories
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 
-// Register the Account Service
+// Register services
 builder.Services.AddScoped<IAccountService, AccountService>();
 
 var app = builder.Build();
