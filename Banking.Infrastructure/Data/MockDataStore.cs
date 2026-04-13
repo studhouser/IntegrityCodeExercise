@@ -1,10 +1,14 @@
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 using Banking.Core.Entities;
 
 namespace Banking.Infrastructure.Data;
 
 public static class MockDataStore
 {
+    private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+    private static int _lastAccountId = 0;
+
     // Use a static constructor to seed the data once
     static MockDataStore()
     {
@@ -27,8 +31,30 @@ public static class MockDataStore
     public static List<Customer> Customers { get; } = new();
     public static List<Account> Accounts { get; } = new();
 
-    public static int GetNextAccountId() 
+    public static async Task<Account> AddAccount(Account account)
     {
-        return Accounts.Any() ? Accounts.Max(a => a.Id) + 1 : 1;
+        typeof(Account).GetProperty(nameof(Account.Id))?.SetValue(account, await GetNextAccountIdAsync());
+
+        Accounts.Add(account);
+        return account;
+    }
+
+    public static async Task<int> GetNextAccountIdAsync()
+    {
+        await _semaphore.WaitAsync();
+
+        try
+        {
+            if (_lastAccountId == 0 && Accounts.Any())
+            {
+                _lastAccountId = Accounts.Max(a => a.Id);
+            }
+
+            return ++_lastAccountId;
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 }

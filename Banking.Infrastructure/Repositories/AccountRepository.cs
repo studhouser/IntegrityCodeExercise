@@ -33,11 +33,7 @@ public class AccountRepository : IAccountRepository
         // async database call simulation
         await Task.Delay(50, cancellationToken);
 
-        var id = MockDataStore.GetNextAccountId();
-
-        var created = new Account(id, account.CustomerId, account.Balance, account.AccountType);
-
-        MockDataStore.Accounts.Add(created);
+        var created = await MockDataStore.AddAccount(account);
 
         return created;
     }
